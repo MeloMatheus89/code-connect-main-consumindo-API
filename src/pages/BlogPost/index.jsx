@@ -44,8 +44,7 @@ export const BlogPost = () => {
               <p>{post.likes}</p>
             </div>
             <div className={styles.action}>
-              {/* Adicionei aqui o isEditing. Verificar se é isso mesmo que era para acontecer. */}
-              <ModalComment isEditing={true} />
+              <ModalComment />
               <p>{post.comments.length}</p>
             </div>
           </div>
