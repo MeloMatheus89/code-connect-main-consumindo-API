@@ -1,4 +1,3 @@
-import { posts } from "../Feed/data";
 import styles from "./blogpost.module.css";
 import { ThumbsUpButton } from "../../components/CardPost/ThumbsUpButton";
 import { Author } from "../../components/Author";
@@ -6,20 +5,28 @@ import Typography from "../../components/Typography";
 import { CommentList } from "../../components/CommentList";
 import ReactMarkdown from "react-markdown";
 import { useNavigate, useParams } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ModalComment } from "../../components/ModalComment";
 
 export const BlogPost = () => {
+  const [post, setPost] = useState(null);
   const { slug } = useParams();
   const navigate = useNavigate();
 
-  const post = posts.find((p) => p.slug == slug);
-
   useEffect(() => {
-    if (!post) {
-      navigate("/not-found");
-    }
-  }, [navigate, post]);
+    // Pegando os posts por slug
+    fetch(`http://localhost:3000/blog-posts/slug/${slug}`)
+      //transforma a resposta em um JSON.
+      .then((response) => {
+        // tratativa de Not-Found redirecionando para o Not-Found
+        if (response.status === 404) {
+          navigate("/not-found");
+        }
+        return response.json();
+      })
+      // Pega o resultado obtido e armazena ele usando o useState com essas informações.
+      .then((data) => setPost(data));
+  }, [slug, navigate]);
 
   if (!post) {
     return null;
