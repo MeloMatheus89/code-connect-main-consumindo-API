@@ -43,17 +43,32 @@ export const useAuth = () => {
     }
   };
 
-  const login = (email, password) => {
+  const login = async (email, password) => {
     try {
-      const users = JSON.parse(localStorage.getItem("auth_users") || "[]");
-      const user = users.find((u) => u.email === email && u.password === password);
+      const response = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-      if (!user) {
-        throw new Error("Email ou senha incorretos");
+      if (!response.ok) {
+        throw new Error("HTTP ERROR: ", response.status);
       }
 
-      setUser(user);
-      localStorage.setItem("auth_user", JSON.stringify(user));
+      // Se passar o login precisamos definir o usuário logado.
+
+      const data = await response.json();
+
+      // O backend envia um token e um user então...
+      setUser(data.user);
+      // É importante lembrar que a local Storage é a menos segura, uma boa prática seria salvar na sessionstorage (confirmar como digita)
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
+      localStorage.setItem("access_token", data.access_token);
 
       return { success: true, user };
     } catch (error) {
@@ -62,8 +77,10 @@ export const useAuth = () => {
   };
 
   const logout = () => {
+    //alteramos o logou para ele também limpar o access_token.
     setUser(null);
     localStorage.removeItem("auth_user");
+    localStorage.removeItem("access_token");
   };
 
   const isAuthenticated = !!user;

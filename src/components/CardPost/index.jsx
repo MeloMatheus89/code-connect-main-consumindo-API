@@ -12,8 +12,14 @@ export const CardPost = ({ post }) => {
   const [likes, setLikes] = useState(post.likes);
 
   const handleLikeButton = () => {
+    const token = localStorage.getItem("access_token");
     //Estrutura do fecth copiada do BlogPost e editada para o endpoint de likes
     fetch(`http://localhost:3000/blog-posts/${post.id}/like`, {
+      headers: {
+        // Quando estamos falando de uma API STATELESS precisamos passar para ela a autorização no cabeçalho.
+        // Por isso que a função não iria rodar mesmo com o login feito.
+        Authorization: `Bearer ${token}`,
+      },
       method: "POST",
     })
       //Coleta uma resposta e...
