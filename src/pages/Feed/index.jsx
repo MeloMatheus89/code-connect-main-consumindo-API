@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CardPost } from "../../components/CardPost";
 import styles from "./feed.module.css";
+import { http } from "../../api";
 
 // estado local com os posts
 // Usaremos useEffect para montar um componente quando algo for mudado
@@ -11,13 +12,11 @@ export const Feed = () => {
 
   useEffect(() => {
     //Promessa de que vai ir lá pegar algo, não é possível garantir que vai dar certo e nem que vai terminar cedo.
-    fetch("http://localhost:3000/blog-posts")
-      //transforma a resposta em um JSON.
-      .then((response) => {
-        return response.json();
-      })
+    http
+      .get("blog-posts")
+
       // Pega o resultado obtido e armazena ele usando o useState com essas informações.
-      .then((data) => setPosts(data));
+      .then((response) => setPosts(response.data));
     // Array vazio significa que ele vai executar essa função apenas 1 única vez. (No ambiente de dev irá duas vezes, culpa do StrictMode.)
   }, []);
 
