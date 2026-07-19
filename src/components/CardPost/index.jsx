@@ -6,12 +6,20 @@ import styles from "./cardpost.module.css";
 import { ThumbsUpButton } from "./ThumbsUpButton";
 import { Link } from "react-router";
 import { http } from "../../api";
+import { useAuth } from "../../hooks/useAuth";
 
 export const CardPost = ({ post }) => {
   //Vamos criar um estado local para o Like
 
   const [likes, setLikes] = useState(post.likes);
+  const [comments, setComments] = useState(post.comments);
 
+  const { isAuthenticated } = useAuth();
+
+  const handleNewComment = (comment) => {
+    // Ele adiciona o comentário novo e reescreve o array de comments adicionando o comentário no topo do array. (validar o comportamento depois)
+    setComments([comment, ...comments]);
+  };
   const handleLikeButton = () => {
     const token = localStorage.getItem("access_token");
     //Estrutura do fecth copiada do BlogPost e editada para o endpoint de likes
@@ -52,13 +60,13 @@ export const CardPost = ({ post }) => {
       <footer className={styles.footer}>
         <div className={styles.actions}>
           <div className={styles.action}>
-            <ThumbsUpButton loading={false} onClick={handleLikeButton} />
+            <ThumbsUpButton loading={false} onClick={handleLikeButton} disabled={!isAuthenticated} />
             {/* Alterado para buscar do hook ao invés do banco de dados direto */}
             <p>{likes}</p>
           </div>
           <div className={styles.action}>
-            <ModalComment />
-            <p>{post.comments.length}</p>
+            <ModalComment onSuccess={handleNewComment} postId={post.id} />
+            <p>{comments.length}</p>
           </div>
         </div>
         <Author author={post.author} />
