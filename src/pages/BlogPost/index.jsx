@@ -13,6 +13,12 @@ export const BlogPost = () => {
   const [post, setPost] = useState(null);
   const { slug } = useParams();
   const navigate = useNavigate();
+  const [comments, setComments] = useState([]);
+
+  const handleNewComment = (comment) => {
+    // Ele adiciona o comentário novo e reescreve o array de comments adicionando o comentário no topo do array. (validar o comportamento depois)
+    setComments([comment, ...comments]);
+  };
 
   useEffect(() => {
     // Pegando os posts por slug
@@ -27,6 +33,7 @@ export const BlogPost = () => {
           return;
         }
         setPost(response.data);
+        setComments(response.data.comments);
       })
       // No AXIOS os erros devem ser tratados no .catch
       .catch((error) => {
@@ -60,8 +67,8 @@ export const BlogPost = () => {
               <p>{post.likes}</p>
             </div>
             <div className={styles.action}>
-              <ModalComment />
-              <p>{post.comments.length}</p>
+              <ModalComment onSuccess={handleNewComment} postId={post?.id} />
+              <p>{comments.length}</p>
             </div>
           </div>
           <Author author={post.author} />
@@ -71,7 +78,7 @@ export const BlogPost = () => {
       <div className={styles.code}>
         <ReactMarkdown>{post.markdown}</ReactMarkdown>
       </div>
-      <CommentList comments={post.comments} />
+      <CommentList comments={comments} />
     </main>
   );
 };

@@ -12,7 +12,7 @@ import { http } from "../../api";
 import { useAuth } from "../../hooks/useAuth";
 
 // Adicionado um onSuccess como callback em caso de sucesso.
-export const ModalComment = ({ isEditing, onSuccess, postId }) => {
+export const ModalComment = ({ isEditing, onSuccess, postId, defaultValue = "", commentId }) => {
   const modalRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const { isAuthenticated } = useAuth();
@@ -23,18 +23,11 @@ export const ModalComment = ({ isEditing, onSuccess, postId }) => {
 
     if (!text.trim()) return;
 
-    try {
-      setLoading(true);
-      // Enviar essa requisição
+    if (isEditing) {
       http
-        .post(
-          `comments/post/${postId}`,
-          // Como estamos enviando um post, precisamos enviar o corpo da requisição (o que será alterado)
-          {
-            text,
-          },
-          // E os cabeçalhos de autorização.
-          // Dica para o Matheus do futuro com dor de cabeça: Copia e cola daqui o bloco de autorização que está funcionando e não me enche o saco.
+        .patch(
+          `/comments/${commentId}`,
+          { text },
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -46,9 +39,34 @@ export const ModalComment = ({ isEditing, onSuccess, postId }) => {
           onSuccess(response.data);
           setLoading(false);
         });
-      modalRef.current.closeModal();
-    } catch (error) {
-      console.error("Erro ao criar/atualizar comentário:", error);
+    } else {
+      try {
+        setLoading(true);
+        // Enviar essa requisição
+        http
+          .post(
+            `comments/post/${postId}`,
+            // Como estamos enviando um post, precisamos enviar o corpo da requisição (o que será alterado)
+            {
+              text,
+            },
+            // E os cabeçalhos de autorização.
+            // Dica para o Matheus do futuro com dor de cabeça: Copia e cola daqui o bloco de autorização que está funcionando e não me enche o saco.
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          )
+          .then((response) => {
+            modalRef.current.closeModal();
+            onSuccess(response.data);
+            setLoading(false);
+          });
+        modalRef.current.closeModal();
+      } catch (error) {
+        console.error("Erro ao criar/atualizar comentário:", error);
+      }
     }
   };
   return (
@@ -56,7 +74,7 @@ export const ModalComment = ({ isEditing, onSuccess, postId }) => {
       <Modal ref={modalRef}>
         <form action={onSubmit}>
           <Subheading>{isEditing ? "Editar comentário:" : "Deixe seu comentário sobre o post:"}</Subheading>
-          <Textarea required rows={8} name="text" placeholder="Digite aqui..." />
+          <Textarea required rows={8} name="text" placeholder="Digite aqui..." defaultValue={defaultValue} />
           <div className={styles.footer}>
             <Button disabled={loading} type="submit">
               {loading ? (
