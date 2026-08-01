@@ -14,6 +14,10 @@ export const CardPost = ({ post }) => {
 
   const { isAuthenticated } = useAuth();
 
+  const onLikeClick = () => {
+    handleLikeButton(post?.id);
+  };
+
   return (
     <article className={styles.card}>
       <header className={styles.header}>
@@ -29,7 +33,7 @@ export const CardPost = ({ post }) => {
       <footer className={styles.footer}>
         <div className={styles.actions}>
           <div className={styles.action}>
-            <ThumbsUpButton loading={false} onClick={handleLikeButton} disabled={isAuthenticated} />
+            <ThumbsUpButton loading={false} onClick={onLikeClick} disabled={!isAuthenticated} />
             {/* Alterado para buscar do hook ao invés do banco de dados direto */}
             <p>{likes}</p>
           </div>

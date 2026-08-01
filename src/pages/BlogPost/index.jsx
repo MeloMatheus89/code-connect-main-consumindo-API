@@ -64,7 +64,7 @@ export const BlogPost = () => {
         <footer className={styles.footer}>
           <div className={styles.actions}>
             <div className={styles.action}>
-              <ThumbsUpButton loading={false} onClick={onLikeClick} disabled={isAuthenticated} />
+              <ThumbsUpButton loading={false} onClick={onLikeClick} disabled={!isAuthenticated} />
               <p>{likes}</p>
             </div>
             <div className={styles.action}>
