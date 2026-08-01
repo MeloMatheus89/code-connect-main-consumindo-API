@@ -1,49 +1,18 @@
-import { useState } from "react";
+// import { useState } from "react";
 import { Author } from "../Author";
 import { ModalComment } from "../ModalComment";
 import styles from "./cardpost.module.css";
 
 import { ThumbsUpButton } from "./ThumbsUpButton";
 import { Link } from "react-router";
-import { http } from "../../api";
+// import { http } from "../../api";
 import { useAuth } from "../../hooks/useAuth";
+import { usePostInteractions } from "../../hooks/usePostInteractions";
 
 export const CardPost = ({ post }) => {
-  //Vamos criar um estado local para o Like
-
-  const [likes, setLikes] = useState(post.likes);
-  const [comments, setComments] = useState(post.comments);
+  const { likes, comments, handleNewComment, handleLikeButton } = usePostInteractions(post);
 
   const { isAuthenticated } = useAuth();
-
-  const handleNewComment = (comment) => {
-    // Ele adiciona o comentário novo e reescreve o array de comments adicionando o comentário no topo do array. (validar o comportamento depois)
-    setComments([comment, ...comments]);
-  };
-  const handleLikeButton = () => {
-    const token = localStorage.getItem("access_token");
-    //Estrutura do fecth copiada do BlogPost e editada para o endpoint de likes
-    // Quando estamos no AXIOS o cabeçalho é o terceiro parâmetro. O segundo é usado para o corpo da requisição POST.
-    http
-      .post(
-        `blog-posts/${post.id}/like`,
-        {},
-        {
-          headers: {
-            // Quando estamos falando de uma API STATELESS precisamos passar para ela a autorização no cabeçalho.
-            // Por isso que a função não iria rodar mesmo com o login feito.
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      )
-      //Coleta uma resposta e...
-      .then(() => {
-        // Se a resposta for válida para o like, então...
-        // Como o .then só vai rodar em caso de sucesso, podemos retirar o if que estava aqui nas branches anteriores.
-        setLikes((oldState) => oldState + 1);
-        console.log("incrementar Like");
-      });
-  };
 
   return (
     <article className={styles.card}>

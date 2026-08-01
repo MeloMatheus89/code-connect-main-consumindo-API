@@ -8,16 +8,18 @@ import { useNavigate, useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { ModalComment } from "../../components/ModalComment";
 import { http } from "../../api";
+import { useAuth } from "../../hooks/useAuth";
+import { usePostInteractions } from "../../hooks/usePostInteractions";
 
 export const BlogPost = () => {
   const [post, setPost] = useState(null);
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [comments, setComments] = useState([]);
+  const { isAuthenticated } = useAuth();
+  const { comments, likes, handleNewComment, handleDeleteComment, handleLikeButton } = usePostInteractions(post);
 
-  const handleNewComment = (comment) => {
-    // Ele adiciona o comentário novo e reescreve o array de comments adicionando o comentário no topo do array. (validar o comportamento depois)
-    setComments([comment, ...comments]);
+  const onLikeClick = () => {
+    handleLikeButton(post?.id);
   };
 
   useEffect(() => {
@@ -33,7 +35,6 @@ export const BlogPost = () => {
           return;
         }
         setPost(response.data);
-        setComments(response.data.comments);
       })
       // No AXIOS os erros devem ser tratados no .catch
       .catch((error) => {
@@ -63,8 +64,8 @@ export const BlogPost = () => {
         <footer className={styles.footer}>
           <div className={styles.actions}>
             <div className={styles.action}>
-              <ThumbsUpButton loading={false} />
-              <p>{post.likes}</p>
+              <ThumbsUpButton loading={false} onClick={onLikeClick} disabled={isAuthenticated} />
+              <p>{likes}</p>
             </div>
             <div className={styles.action}>
               <ModalComment onSuccess={handleNewComment} postId={post?.id} />
@@ -78,7 +79,7 @@ export const BlogPost = () => {
       <div className={styles.code}>
         <ReactMarkdown>{post.markdown}</ReactMarkdown>
       </div>
-      <CommentList comments={comments} />
+      <CommentList comments={comments} onDelete={handleDeleteComment} />
     </main>
   );
 };

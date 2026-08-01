@@ -19,26 +19,15 @@ export const ModalComment = ({ isEditing, onSuccess, postId, defaultValue = "", 
 
   const onSubmit = async (formData) => {
     const text = formData.get("text");
-    const token = localStorage.getItem("access_token");
 
     if (!text.trim()) return;
 
     if (isEditing) {
-      http
-        .patch(
-          `/comments/${commentId}`,
-          { text },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        )
-        .then((response) => {
-          modalRef.current.closeModal();
-          onSuccess(response.data);
-          setLoading(false);
-        });
+      http.patch(`/comments/${commentId}`, { text }).then((response) => {
+        modalRef.current.closeModal();
+        onSuccess(response.data);
+        setLoading(false);
+      });
     } else {
       try {
         setLoading(true);
@@ -49,13 +38,6 @@ export const ModalComment = ({ isEditing, onSuccess, postId, defaultValue = "", 
             // Como estamos enviando um post, precisamos enviar o corpo da requisição (o que será alterado)
             {
               text,
-            },
-            // E os cabeçalhos de autorização.
-            // Dica para o Matheus do futuro com dor de cabeça: Copia e cola daqui o bloco de autorização que está funcionando e não me enche o saco.
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
             },
           )
           .then((response) => {
