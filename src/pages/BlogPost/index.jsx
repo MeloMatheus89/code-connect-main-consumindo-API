@@ -7,25 +7,42 @@ import ReactMarkdown from "react-markdown";
 import { useNavigate, useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { ModalComment } from "../../components/ModalComment";
+import { http } from "../../api";
+import { useAuth } from "../../hooks/useAuth";
+import { usePostInteractions } from "../../hooks/usePostInteractions";
 
 export const BlogPost = () => {
   const [post, setPost] = useState(null);
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { comments, likes, handleNewComment, handleDeleteComment, handleLikeButton } = usePostInteractions(post);
+
+  const onLikeClick = () => {
+    handleLikeButton(post?.id);
+  };
 
   useEffect(() => {
     // Pegando os posts por slug
-    fetch(`http://localhost:3000/blog-posts/slug/${slug}`)
+    http
+      .get(`blog-posts/slug/${slug}`)
       //transforma a resposta em um JSON.
       .then((response) => {
         // tratativa de Not-Found redirecionando para o Not-Found
+        // No AXIOS os erros devem ser tratados no .catch
         if (response.status === 404) {
           navigate("/not-found");
+          return;
         }
-        return response.json();
+        setPost(response.data);
       })
-      // Pega o resultado obtido e armazena ele usando o useState com essas informações.
-      .then((data) => setPost(data));
+      // No AXIOS os erros devem ser tratados no .catch
+      .catch((error) => {
+        if (error.status === 404) {
+          navigate("/not-found");
+          return;
+        }
+      });
   }, [slug, navigate]);
 
   if (!post) {
@@ -47,12 +64,12 @@ export const BlogPost = () => {
         <footer className={styles.footer}>
           <div className={styles.actions}>
             <div className={styles.action}>
-              <ThumbsUpButton loading={false} />
-              <p>{post.likes}</p>
+              <ThumbsUpButton loading={false} onClick={onLikeClick} disabled={!isAuthenticated} />
+              <p>{likes}</p>
             </div>
             <div className={styles.action}>
-              <ModalComment />
-              <p>{post.comments.length}</p>
+              <ModalComment onSuccess={handleNewComment} postId={post?.id} />
+              <p>{comments.length}</p>
             </div>
           </div>
           <Author author={post.author} />
@@ -62,7 +79,7 @@ export const BlogPost = () => {
       <div className={styles.code}>
         <ReactMarkdown>{post.markdown}</ReactMarkdown>
       </div>
-      <CommentList comments={post.comments} />
+      <CommentList comments={comments} onDelete={handleDeleteComment} />
     </main>
   );
 };

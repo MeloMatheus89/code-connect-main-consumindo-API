@@ -1,29 +1,21 @@
-import { useState } from "react";
+// import { useState } from "react";
 import { Author } from "../Author";
 import { ModalComment } from "../ModalComment";
 import styles from "./cardpost.module.css";
 
 import { ThumbsUpButton } from "./ThumbsUpButton";
 import { Link } from "react-router";
+// import { http } from "../../api";
+import { useAuth } from "../../hooks/useAuth";
+import { usePostInteractions } from "../../hooks/usePostInteractions";
 
 export const CardPost = ({ post }) => {
-  //Vamos criar um estado local para o Like
+  const { likes, comments, handleNewComment, handleLikeButton } = usePostInteractions(post);
 
-  const [likes, setLikes] = useState(post.likes);
+  const { isAuthenticated } = useAuth();
 
-  const handleLikeButton = () => {
-    //Estrutura do fecth copiada do BlogPost e editada para o endpoint de likes
-    fetch(`http://localhost:3000/blog-posts/${post.id}/like`, {
-      method: "POST",
-    })
-      //Coleta uma resposta e...
-      .then((response) => {
-        // Se a resposta for válida para o like, então...
-        if (response.ok) {
-          setLikes((oldState) => oldState + 1);
-          console.log("incrementar Like");
-        }
-      });
+  const onLikeClick = () => {
+    handleLikeButton(post?.id);
   };
 
   return (
@@ -41,13 +33,13 @@ export const CardPost = ({ post }) => {
       <footer className={styles.footer}>
         <div className={styles.actions}>
           <div className={styles.action}>
-            <ThumbsUpButton loading={false} onClick={handleLikeButton} />
+            <ThumbsUpButton loading={false} onClick={onLikeClick} disabled={!isAuthenticated} />
             {/* Alterado para buscar do hook ao invés do banco de dados direto */}
             <p>{likes}</p>
           </div>
           <div className={styles.action}>
-            <ModalComment />
-            <p>{post.comments.length}</p>
+            <ModalComment onSuccess={handleNewComment} postId={post.id} />
+            <p>{comments.length}</p>
           </div>
         </div>
         <Author author={post.author} />
